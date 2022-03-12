@@ -1,0 +1,193 @@
+---
+title: "R_Project"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(tibble)
+```
+
+
+
+```{r}
+#SNP_Position Analyzing File Structure
+snp_position.txt=read.csv("snp_position.txt")
+file.info("snp_position.txt")$size #Use file.info function to determine file size. File is 82763 
+snp_position.txt=(as.data.frame=(read.table("snp_position.txt", sep= "\t", header= TRUE)))
+dim(snp_position.txt) #dim function returns the dimension of the dataframe. Returns 988 objects and 15 columns
+ncol(snp_position.txt) #ncol function determines number of columns in dataframe. Returns 15 columns
+names(snp_position.txt)#names function determines the 15 names of the columns in snp_position.txt dataframe
+head(snp_position.txt, n=6L, addrownames=TRUE) #head function returns the first 6 lines of the snp_poisition.txt dataframe
+tail(snp_position.txt, n=6L, addrownames=TRUE) #tail function returns the last 6 lines of the snp_position.txt dataframe
+
+```
+
+
+
+```{r}
+#Tidying SNP_Position Data
+snp_position_trim=select(snp_position.txt, SNP_ID, Chromosome, Position) #Selects only the three desired columns 
+snp_position_order=snp_position_trim[order(snp_position_trim$Chromosome),]
+ncol(snp_position_order)
+dim(snp_position_trim)
+is.numeric(snp_position_order$Chromosome)#is.numeric checks to see if the column I want to sort by is characterized as numeric. 
+is.numeric(snp_position_order$Position) #checks to see if position column is numeric
+snp_position_order$Position=as.numeric(as.character(snp_position_order$Position)) #
+snp_position_order$Chromosome=as.numeric(as.character(snp_position_order$Chromosome)) #Serves to convert character in chromosome to numeric value
+snp_position_order=snp_position_order[order(snp_position_order$Chromosome, snp_position_order$Position),] #Sort file based on chromosome numeric value and then sort based on position
+
+```
+
+```{r}
+#Fang_et_al_genotypes Analyzing File Structure
+fang_et_al_genotypes.txt=read.csv("fang_et_al_genotypes.txt") #Use to read CSV for future use
+fang_et_al_genotypes.txt=(as.data.frame=(read.table("fang_et_al_genotypes.txt", sep= "\t", header= TRUE)))
+file.info("fang_et_al_genotypes.txt")$size # use to gain insight of file size 11051939
+dim(fang_et_al_genotypes.txt) #use to determine dimensions of file contains 2782 objects and 986 columns
+head(fang_et_al_genotypes.txt, n=6L, addrownames=TRUE) #head function returns first 6 lines. 
+```
+
+
+
+```{r}
+#Seperating Genotypes
+target_maize=c("ZMMLR","ZMMIL", "ZMMMR") #used to Set targets for extraction from main file
+maize_genotype=filter(fang_et_al_genotypes.txt, Group %in% target_maize) #Used to extract desired maize genotypes
+maize_genotype_transpose= t(maize_genotype) #Used to transpose extracted data from fang_et_al
+target_teosinte= c("ZMPBA", "ZMPIL", "ZMPJA") #Used to set targets for extraction from main file
+teosinte_genotype= filter(fang_et_al_genotypes.txt, Group %in% target_teosinte) #Used to extract desired teosinte genotypes
+teosinte_genotype_transpose=t(teosinte_genotype) #Used to transpose extracted data 
+```
+
+
+
+
+
+
+```{r}
+#Joining and Ordering Maize Files 
+maize_genotype_transpose2=maize_genotype_transpose #Used to make copy of maize transposed data set
+maize_genotype_transpose2= as.data.frame(maize_genotype_transpose2) #Used to convert to data frame so I could merge files based on common column
+str(maize_genotype_transpose2) #Used to make sure it was in data frame structure
+maize_genotype_transpose2= tibble::rownames_to_column(maize_genotype_transpose2, "SNP_ID") #Used to move the SNP ID row headers into column
+maize_join_file=merge(snp_position_order, maize_genotype_transpose2) #Used to join files 
+is.numeric(maize_join_file$Chromosome)
+is.numeric(maize_join_file$Position)
+maize_join_file=maize_join_file[order(maize_join_file$Chromosome, maize_join_file$Position),] #Used to sort the file based on chromosome and on position
+maize_join_file_decending= maize_join_file[order(maize_join_file$Chromosome, -maize_join_file$Position),] #Used to sort the file based on decending positon
+maize_join_file_decending[maize_join_file_decending=="?/?"]="-/-" #Used to replace ?\? with -\-
+```
+
+
+```{r}
+#Joining and Ordering Teosinte Files 
+teosinte_genotype_transpose2=teosinte_genotype_transpose # Used to duplicate teosinte data
+teosinte_genotype_transpose2= as.data.frame(teosinte_genotype_transpose2) # Sets teosinte as data frame
+teosinte_genotype_transpose2= tibble:: rownames_to_column(teosinte_genotype_transpose2, "SNP_ID")# switches row names for merging
+teosinte_join_file= merge(snp_position_order, teosinte_genotype_transpose2) # merges data
+is.numeric(teosinte_join_file$Chromosome)
+is.numeric(teosinte_join_file$Position)
+teosinte_join_file= teosinte_join_file[order(teosinte_join_file$Chromosome, teosinte_join_file$Position),] # orders based on increasing chromosome and postiion
+teosinte_join_file_decending= teosinte_join_file[order(teosinte_join_file$Chromosome, -teosinte_join_file$Position),] #Order based on decreasing SNP position
+teosinte_join_file_decending[teosinte_join_file_decending=="?/?"]="-/-" #Replace ? with -
+```
+
+
+```{r}
+#Seperating Maize increasing and decreasing files 
+
+chrom= 1:10
+for (i in chrom) {
+  maize_file_increase= maize_join_file[maize_join_file$Chromosome == i,]
+  if (i < 10) {write.table(maize_file_increase, file = paste("maize_chr0",i,"_increase.txt",sep = ""), row.names = FALSE,sep = "\t",quote = FALSE)}
+  else {write.table(maize_file_increase, file = paste("maize_chr",i,"_increase.txt",sep = ""),row.names = FALSE,sep = "\t",quote = FALSE)}
+  }
+
+
+for (i in chrom){ 
+  maize_file_decrease= maize_join_file_decending[maize_join_file_decending$Chromosome == i,]
+  if (i < 10) {write.table(maize_file_decrease, file = paste("maize_chr0",i,"_decrease.txt",sep = ""), row.names = FALSE,sep = "\t",quote = FALSE)}
+  else {write.table(maize_file_decrease, file = paste("maize_chr",i,"_decrease.txt",sep = ""),row.names = FALSE,sep = "\t",quote = FALSE)}
+}
+
+```
+
+
+```{r}
+#Separating Teosinte increasing and decreasing files 
+
+for (i in chrom) { 
+  teosinte_file_increase= teosinte_join_file[teosinte_join_file$Chromosome == i,]
+  if (i < 10) {write.table(teosinte_file_increase, file = paste("teosinte_chr0",i,"_increase.txt",sep = ""),row.names = FALSE,sep = "\t",quote = FALSE)}
+  else{write.table(teosinte_file_increase,file = paste("teosinte_chr",i,"_increase.txt",sep = ""),row.names = FALSE,sep = "\t",quote = FALSE)}
+}
+
+for (i in chrom) {
+  teosinte_file_decrease= teosinte_join_file_decending[teosinte_join_file_decending$Chromosome == i,]
+  if (i < 10) {write.table(teosinte_file_decrease,file = paste("teosinte_chr0",i,"_decrease.txt",sep = ""),row.names = FALSE,sep = "\t",quote = FALSE)} 
+  else{write.table(teosinte_file_decrease,file = paste("teosinte_chr",i,"_decreasing.txt",sep = ""),row.names = FALSE,sep = "\t",quote = FALSE)}
+}
+```
+
+
+```{r}
+## ggplot visualization SNPS Distribution Maize 
+names(maize_join_file)
+
+maize_join_file %>% 
+  dplyr::select(SNP_ID, Chromosome, Position) %>%
+  drop_na(Chromosome) %>%
+  ggplot()+
+  geom_bar(aes(x=Chromosome))+
+  scale_x_continuous(breaks = 1:10)
+
+## ggplot visualization SNPS Distribution Teosinte
+teosinte_join_file %>% 
+  dplyr::select(SNP_ID, Chromosome, Position) %>%
+  drop_na(Chromosome) %>%
+  ggplot()+
+  geom_bar(aes(x=Chromosome))+
+  scale_x_continuous(breaks = 1:10)
+```
+
+
+
+
+```{r}
+#Heterozygotes and Homozygotes
+  
+
+
+fang_et_al_plot=fang_et_al_genotypes.txt%>% select(-JG_OTU)%>% pivot_longer(-Sample_ID: -Group, names_to = "SNP_ID", values_to = "SNP") %>%
+  mutate(SNP=ifelse(SNP %in% c("A/A","C/C","T/T","G/G"),"Homozygote", ifelse(SNP=="?/?","NA","Heterozygote")))
+
+
+ggplot(fang_et_al_plot,aes(x=Group, fill=SNP))+
+         geom_bar()+
+  theme(axis.text.x=element_text(angle=45,size = rel(0.5), margin = margin(1, unit = "cm"),vjust =1))
+
+
+ggplot(fang_et_al_plot, aes(x=Sample_ID, fill=SNP))+
+  geom_bar()+
+  theme(axis.text.x=element_text(angle=150, size=rel(0.002)))
+```
+
+
+##Personal Data Still in progress 
