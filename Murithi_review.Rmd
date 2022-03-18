@@ -1,0 +1,44 @@
+---
+title: "Review"
+author: "Ann Murithi"
+date: "3/18/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```
+My comments: 
+1. All your code run well to produce the expected files. 
+2. Good job with the file insepection
+3. Creating of file path and saving of your data was creative to reduce long unnecessary file paths. 
+4. Placing the output of the analysis into individual folders made your work accessible and easy to follow
+5. Overall, your work was well done with every step clearly explained from file inspection, processing to visualization.
+ 
+Good job!
+```
+--> I would only suggest that you move your comments outside of the script chunk. For each of the step, you would make the comments either before or after the chunk. 
+Here is an example for insepction of the SNP_file
+
+#SNP_Position Analyzing File Structure
+
+  1. Use file.info function to determine file size.
+  2. dim function returns the dimension of the dataframe. 
+  3. ncol function determines number of columns in dataframe. 
+  4. names function to determine the coulumn headers in snp_position.txt dataframe
+  5. head function returns the first 6 lines of the snp_poisition.txt dataframe
+  6. tail function returns the last 6 lines of the snp_position.txt dataframe
+
+```{r}
+snp_position.txt=read.csv("snp_position.txt")
+file.info("snp_position.txt")$size 
+snp_position.txt=(as.data.frame=(read.table("snp_position.txt", sep= "\t", header= TRUE)))
+dim(snp_position.txt) 
+ncol(snp_position.txt) 
+names(snp_position.txt)
+head(snp_position.txt, n=6L, addrownames=TRUE) 
+tail(snp_position.txt, n=6L, addrownames=TRUE) 
+```
