@@ -190,4 +190,27 @@ ggplot(fang_et_al_plot, aes(x=Sample_ID, fill=SNP))+
 ```
 
 
-##Personal Data Still in progress 
+```{r}
+#Personal data visualization. My goal is to use the ggplot geom_point to get an idea of the distance between position on chromosomes. 
+
+teosinte_join_file %>%
+dplyr::select(SNP_ID, Chromosome, Position) %>%
+  drop_na(Chromosome) %>%
+  ggplot()+
+  geom_point(aes(x=Chromosome, y= Position, Fill= Position))+
+  scale_x_continuous(breaks = 1:10)
+
+
+maize_join_file %>%
+  dplyr::select(SNP_ID, Chromosome, Position) %>%
+  drop_na(Chromosome) %>%
+  ggplot()+
+  geom_point(aes(x=Chromosome, y= Position, Fill= Position))+
+  scale_x_continuous(breaks = 1:10)
+
+```
+ 
+
+
+
+
