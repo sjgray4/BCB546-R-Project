@@ -8,4 +8,4 @@ Teosinte: 10 file sorted by chromosome and increaseing SNP position, and 10 file
 
 This repository also contains a RMarkdown file which contains the codes necessary for data processing and visulization. 
 
-In adition, reviews of the R code from two peers are included in this repository 
+In addition, reviews of the R code from two peers are included in this repository 
